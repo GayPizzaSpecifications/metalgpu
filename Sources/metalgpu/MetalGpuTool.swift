@@ -134,16 +134,6 @@ struct MetalGpuTool: ParsableCommand {
             features["Barycentric Coordinates"] = gpu.supportsShaderBarycentricCoordinates
         }
 
-        #if compiler(>=5.5)
-            if #available(macOS 12.0, *) {
-                features["Ray Tracing from Render"] = gpu.supportsRaytracingFromRender
-            }
-
-            if #available(macOS 12.0, *) {
-                features["Function Pointers from Render"] = gpu.supportsFunctionPointersFromRender
-            }
-        #endif
-
         return features
     }
 

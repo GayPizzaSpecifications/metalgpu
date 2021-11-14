@@ -4,8 +4,7 @@ import PackageDescription
 let package = Package(
     name: "metalgpu",
     platforms: [
-        .macOS(.v10_15),
-        .iOS(.v10)
+        .macOS(.v10_11)
     ],
     products: [
         .executable(name: "metalgpu", targets: ["metalgpu"])

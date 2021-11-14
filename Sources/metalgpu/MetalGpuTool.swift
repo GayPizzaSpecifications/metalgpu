@@ -47,29 +47,48 @@ struct MetalGpuTool: ParsableCommand {
 
     func printGpuInfo(_ gpu: MTLDevice, index: Int? = nil) {
         let characteristics = collectGpuCharacteristics(gpu)
-        let features = collectFeatureSupport(gpu)
+        let features = collectFeatureSupport(gpu).sorted(by: {
+            $0.key.compare($1.key) == .orderedAscending
+        })
 
         if index != nil {
             print("Index: \(index!)")
         }
 
         print("  Name: \(gpu.name)")
-        print("  Registry ID: \(gpu.registryID)")
-        print("  Location: \(locationAsString(gpu.location))")
+        if #available(macOS 10.13, *) {
+            print("  Registry ID: \(gpu.registryID)")
+        }
+
+        if #available(macOS 10.15, *) {
+            print("  Location: \(locationAsString(gpu.location))")
+        }
         print("  Characteristics: \(joinedOrEmpty(characteristics, "(None)"))")
         print("  Features:")
-        for (name, supported) in features.sorted(by: {
-            $0.key.compare($1.key) == .orderedAscending
-        }) {
+        for (name, supported) in features {
             print("    \(name): \(supported ? "Supported" : "Unsupported")")
         }
-        if gpu.location != .builtIn {
-            print("  Max Transfer Rate: \(byteCountString(Int64(gpu.maxTransferRate)))/sec")
+
+        if #available(macOS 10.15, *) {
+            if gpu.location != .builtIn {
+                print("  Max Transfer Rate: \(byteCountString(Int64(gpu.maxTransferRate)))/sec")
+            }
         }
-        print("  Recommended Maximum Memory Size: \(byteCountString(Int64(gpu.recommendedMaxWorkingSetSize)))")
-        print("  Max Buffer Length: \(byteCountString(Int64(gpu.maxBufferLength)))")
+
+        if #available(macOS 10.12, *) {
+            print("  Recommended Maximum Memory Size: \(byteCountString(Int64(gpu.recommendedMaxWorkingSetSize)))")
+        }
+
+        if #available(macOS 10.14, *) {
+            print("  Max Buffer Length: \(byteCountString(Int64(gpu.maxBufferLength)))")
+        }
+
         print("  Max Threads per Thread Group: \(sizeToString(gpu.maxThreadsPerThreadgroup))")
-        print("  Max Thread Group Memory Size: \(byteCountString(Int64(gpu.maxThreadgroupMemoryLength)))")
+
+        if #available(macOS 10.13, *) {
+            print("  Max Thread Group Memory Size: \(byteCountString(Int64(gpu.maxThreadgroupMemoryLength)))")
+        }
+
         if #available(macOS 11.0, *) {
             print("  Sparse Tile Size: \(byteCountString(Int64(gpu.sparseTileSizeInBytes)))")
         }
@@ -85,12 +104,16 @@ struct MetalGpuTool: ParsableCommand {
             characteristics.append("Headless")
         }
 
-        if gpu.isRemovable {
-            characteristics.append("Removable")
+        if #available(macOS 10.13, *) {
+            if gpu.isRemovable {
+                characteristics.append("Removable")
+            }
         }
 
-        if gpu.hasUnifiedMemory {
-            characteristics.append("Unified Memory")
+        if #available(macOS 10.15, *) {
+            if gpu.hasUnifiedMemory {
+                characteristics.append("Unified Memory")
+            }
         }
         return characteristics
     }
@@ -129,13 +152,25 @@ struct MetalGpuTool: ParsableCommand {
             features["BC Texture Compression"] = gpu.supportsBCTextureCompression
         }
 
-        features["Shader Barycentric Coordinates"] = gpu.supportsShaderBarycentricCoordinates
-        features["Barycentric Coordinates"] = gpu.areBarycentricCoordsSupported
-        features["Raster Order Groups"] = gpu.areRasterOrderGroupsSupported
-        features["Programmable Sample Position"] = gpu.areProgrammableSamplePositionsSupported
+        if #available(macOS 10.15, *) {
+            features["Shader Barycentric Coordinates"] = gpu.supportsShaderBarycentricCoordinates
+        }
+
+        if #available(macOS 10.15, *) {
+            features["Barycentric Coordinates"] = gpu.areBarycentricCoordsSupported
+        }
+
+        if #available(macOS 10.13, *) {
+            features["Raster Order Groups"] = gpu.areRasterOrderGroupsSupported
+        }
+
+        if #available(macOS 10.13, *) {
+            features["Programmable Sample Position"] = gpu.areProgrammableSamplePositionsSupported
+        }
         return features
     }
 
+    @available(macOS 10.15, *)
     func locationAsString(_ location: MTLDeviceLocation) -> String {
         switch location {
         case .builtIn: return "Built-in"

@@ -10,8 +10,32 @@ import Foundation
 import Metal
 
 struct MetalGpuTool: ParsableCommand {
+    static var configuration = CommandConfiguration(
+        commandName: "metalgpu",
+        abstract: "View Metal GPU Information"
+    )
+
+    @Flag(name: [.customShort("d"), .customLong("default")], help: "View Default GPU")
+    var isDefaultOnly = false
+
+    @Option(name: [.customShort("i"), .customLong("index")], help: "View GPU of Specified Index")
+    var onlySelectedIndex: Int?
+
     func run() throws {
-        let gpus = MTLCopyAllDevices()
+        var gpus: [MTLDevice] = []
+        if isDefaultOnly {
+            guard let gpu = MTLCreateSystemDefaultDevice() else {
+                throw DefaultDeviceNotFound()
+            }
+            gpus.append(gpu)
+        } else {
+            gpus.append(contentsOf: MTLCopyAllDevices())
+        }
+
+        if let onlySelectedIndex = onlySelectedIndex {
+            let gpu = gpus[onlySelectedIndex]
+            gpus = [gpu]
+        }
 
         for (index, gpu) in gpus.enumerated() {
             printGpuInfo(gpu, index: index)
@@ -71,4 +95,6 @@ struct MetalGpuTool: ParsableCommand {
             return items.joined(separator: ", ")
         }
     }
+
+    struct DefaultDeviceNotFound: Error {}
 }

@@ -12,18 +12,18 @@ Index: 0
   Location: Built-in
   Characteristics: Unified Memory
   Features:
-    BC Texture Compression: Supported
     32-Bit Float Filtering: Supported
     32-Bit MSAA: Supported
+    BC Texture Compression: Supported
+    Barycentric Coordinates: Supported
     Dynamic Libraries: Supported
-    Ray Tracing: Supported
-    Query Texture LOD: Supported
+    Function Pointers: Supported
+    Function Pointers from Render: Supported
     Primitive Motion Blur: Supported
     Pull Model Interopolation: Supported
-    Function Pointers: Supported
-    Barycentric Coordinates: Supported
+    Query Texture LOD: Supported
+    Ray Tracing: Supported
     Ray Tracing from Render: Supported
-    Function Pointers from Render: Supported
   Recommended Maximum Memory Size: 42.67 GB
   Max Buffer Length: 32 GB
   Max Threads per Thread Group: (Width: 1024, Height: 1024, Depth: 1024)

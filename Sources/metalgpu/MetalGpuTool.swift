@@ -58,7 +58,9 @@ struct MetalGpuTool: ParsableCommand {
         print("  Location: \(locationAsString(gpu.location))")
         print("  Characteristics: \(joinedOrEmpty(characteristics, "(None)"))")
         print("  Features:")
-        for (name, supported) in features {
+        for (name, supported) in features.sorted(by: {
+            $0.key.compare($1.key) == .orderedAscending
+        }) {
             print("    \(name): \(supported ? "Supported" : "Unsupported")")
         }
         if gpu.location != .builtIn {
@@ -89,57 +91,59 @@ struct MetalGpuTool: ParsableCommand {
         }
         return characteristics
     }
-    
+
     func collectFeatureSupport(_ gpu: MTLDevice) -> [String: Bool] {
         var features: [String: Bool] = [:]
         if #available(macOS 11.0, *) {
             features["Ray Tracing"] = gpu.supportsRaytracing
         }
-        
-        if #available(macOS 12.0, *) {
-            features["Ray Tracing from Render"] = gpu.supportsRaytracingFromRender
-        }
-        
+
         if #available(macOS 11.0, *) {
             features["32-Bit MSAA"] = gpu.supports32BitMSAA
         }
-        
+
         if #available(macOS 11.0, *) {
             features["Dynamic Libraries"] = gpu.supportsDynamicLibraries
         }
-        
+
         if #available(macOS 11.0, *) {
             features["Function Pointers"] = gpu.supportsFunctionPointers
         }
-        
-        if #available(macOS 12.0, *) {
-            features["Function Pointers from Render"] = gpu.supportsFunctionPointersFromRender
-        }
-        
+
         if #available(macOS 11.0, *) {
             features["Query Texture LOD"] = gpu.supportsQueryTextureLOD
         }
-        
+
         if #available(macOS 11.0, *) {
             features["32-Bit Float Filtering"] = gpu.supports32BitFloatFiltering
         }
-        
+
         if #available(macOS 11.0, *) {
             features["Primitive Motion Blur"] = gpu.supportsPrimitiveMotionBlur
         }
-        
+
         if #available(macOS 11.0, *) {
             features["Pull Model Interopolation"] = gpu.supportsPullModelInterpolation
         }
-        
-        if gpu.supportsShaderBarycentricCoordinates {
-            features["Barycentric Coordinates"] = gpu.supportsShaderBarycentricCoordinates
-        }
-        
+
         if #available(macOS 11.0, *) {
             features["BC Texture Compression"] = gpu.supportsBCTextureCompression
         }
-        
+
+        if gpu.supportsShaderBarycentricCoordinates {
+            features["Barycentric Coordinates"] = gpu.supportsShaderBarycentricCoordinates
+        }
+
+        #if compiler(>=5.5)
+            if #available(macOS 12.0, *) {
+                features["Ray Tracing from Render"] = gpu.supportsRaytracingFromRender
+            }
+
+            if #available(macOS 12.0, *) {
+                features["Function Pointers from Render"] = gpu.supportsFunctionPointersFromRender
+            }
+        #endif
+
         return features
     }
 
@@ -161,11 +165,11 @@ struct MetalGpuTool: ParsableCommand {
             return items.joined(separator: ", ")
         }
     }
-    
+
     func byteCountString(_ value: Int64) -> String {
         ByteCountFormatter.string(fromByteCount: value, countStyle: .binary)
     }
-    
+
     func sizeToString(_ value: MTLSize) -> String {
         "(Width: \(value.width), Height: \(value.height), Depth: \(value.depth))"
     }

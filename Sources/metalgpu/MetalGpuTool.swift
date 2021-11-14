@@ -70,6 +70,9 @@ struct MetalGpuTool: ParsableCommand {
         print("  Max Buffer Length: \(byteCountString(Int64(gpu.maxBufferLength)))")
         print("  Max Threads per Thread Group: \(sizeToString(gpu.maxThreadsPerThreadgroup))")
         print("  Max Thread Group Memory Size: \(byteCountString(Int64(gpu.maxThreadgroupMemoryLength)))")
+        if #available(macOS 11.0, *) {
+            print("  Sparse Tile Size: \(byteCountString(Int64(gpu.sparseTileSizeInBytes)))")
+        }
     }
 
     func collectGpuCharacteristics(_ gpu: MTLDevice) -> [String] {
@@ -119,10 +122,6 @@ struct MetalGpuTool: ParsableCommand {
         }
 
         if #available(macOS 11.0, *) {
-            features["Primitive Motion Blur"] = gpu.supportsPrimitiveMotionBlur
-        }
-
-        if #available(macOS 11.0, *) {
             features["Pull Model Interopolation"] = gpu.supportsPullModelInterpolation
         }
 
@@ -130,10 +129,10 @@ struct MetalGpuTool: ParsableCommand {
             features["BC Texture Compression"] = gpu.supportsBCTextureCompression
         }
 
-        if gpu.supportsShaderBarycentricCoordinates {
-            features["Barycentric Coordinates"] = gpu.supportsShaderBarycentricCoordinates
-        }
-
+        features["Shader Barycentric Coordinates"] = gpu.supportsShaderBarycentricCoordinates
+        features["Barycentric Coordinates"] = gpu.areBarycentricCoordsSupported
+        features["Raster Order Groups"] = gpu.areRasterOrderGroupsSupported
+        features["Programmable Sample Position"] = gpu.areProgrammableSamplePositionsSupported
         return features
     }
 

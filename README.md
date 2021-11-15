@@ -1,7 +1,8 @@
 # metalgpu
 
 [![GitHub Workflow](https://github.com/kendfinger/metalgpu/actions/workflows/macos.yml/badge.svg)](https://github.com/kendfinger/metalgpu/actions/workflows/macos.yml)
-[![Latest Build](https://shields.io/badge/download-latest-blue)](https://nightly.link/kendfinger/metalgpu/workflows/macos/main/metalgpu.zip)
+[![Latest Build](https://shields.io/badge/download-nightly-blue)](https://nightly.link/kendfinger/metalgpu/workflows/macos/main/metalgpu.zip)
+[![Latest Release](https://shields.io/github/v/release/kendfinger/metalgpu?display_name=tag&sort=semver)](https://github.com/kendfinger/metalgpu/releases/latest)
 
 View Metal GPU information from the command-line.
 

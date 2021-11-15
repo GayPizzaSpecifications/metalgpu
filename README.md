@@ -34,7 +34,12 @@ Index: 0
 
 ## Usage
 
-### Install With Mint
+### Install Latest with Homebrew
+
+1. Install [Homebrew](https://brew.sh)
+2. Install metalgpu with Homebrew: `brew install kendfinger/tools/metalgpu`
+
+### Install Nightly With Mint
 
 1. Install Mint: `brew install mint`
 2. Install metalgpu with Mint: `mint install kendfinger/metalgpu@main`

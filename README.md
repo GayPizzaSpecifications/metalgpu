@@ -10,7 +10,7 @@ View Metal GPU information from the command-line.
 $ metalgpu
 Index: 0
   Name: Apple M1 Max
-  Registry ID: 4294969670
+  Registry ID: 4294969661
   Location: Built-in
   Characteristics: Unified Memory
   Features:
@@ -20,16 +20,16 @@ Index: 0
     Barycentric Coordinates: Supported
     Dynamic Libraries: Supported
     Function Pointers: Supported
-    Function Pointers from Render: Supported
-    Primitive Motion Blur: Supported
-    Pull Model Interopolation: Supported
+    Programmable Sample Position: Supported
+    Pull Model Interpolation: Supported
     Query Texture LOD: Supported
-    Ray Tracing: Supported
-    Ray Tracing from Render: Supported
+    Raster Order Groups: Supported
+    Shader Barycentric Coordinates: Supported
   Recommended Maximum Memory Size: 42.67 GB
   Max Buffer Length: 32 GB
   Max Threads per Thread Group: (Width: 1024, Height: 1024, Depth: 1024)
   Max Thread Group Memory Size: 32 KB
+  Sparse Tile Size: 16 KB
   ```
 
 ## Usage

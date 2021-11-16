@@ -21,6 +21,9 @@ struct MetalGpuTool: ParsableCommand {
     @Option(name: [.customShort("i"), .customLong("index")], help: "View GPU of Specified Index")
     var onlySelectedIndex: Int?
 
+    @Flag(name: [.customShort("j"), .customLong("json")], help: "Enable JSON Output")
+    var json: Bool = false
+
     func run() throws {
         var gpus: [MTLDevice] = []
         if isDefaultOnly {
@@ -37,148 +40,63 @@ struct MetalGpuTool: ParsableCommand {
             gpus = [gpu]
         }
 
-        for (index, gpu) in gpus.enumerated() {
-            printGpuInfo(gpu, index: index)
-            if index != gpus.count - 1 {
-                print()
+        let metalGpuInfos: [MetalGpuInfo] = gpus.enumerated().map {
+            $0.element.collectMetalGpuInfo($0.offset)
+        }
+
+        if json {
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = .prettyPrinted
+            let encoded = try encoder.encode(metalGpuInfos)
+            print(String(data: encoded, encoding: .utf8)!)
+        } else {
+            for gpu in metalGpuInfos {
+                printGpuInfo(gpu)
+                if gpu.index != gpus.count - 1 {
+                    print()
+                }
             }
         }
     }
 
-    func printGpuInfo(_ gpu: MTLDevice, index: Int? = nil) {
-        let characteristics = collectGpuCharacteristics(gpu)
-        let features = collectFeatureSupport(gpu).sorted(by: {
-            $0.key.compare($1.key) == .orderedAscending
-        })
-
-        if index != nil {
-            print("Index: \(index!)")
+    func printGpuInfo(_ info: MetalGpuInfo) {
+        let features = info.features.sorted {
+            $0.name.compare($1.name) == .orderedAscending
         }
 
-        print("  Name: \(gpu.name)")
-        if #available(macOS 10.13, *) {
-            print("  Registry ID: \(gpu.registryID)")
+        if let index = info.index {
+            print("Index: \(index)")
         }
 
-        if #available(macOS 10.15, *) {
-            print("  Location: \(locationAsString(gpu.location))")
-        }
-        print("  Characteristics: \(joinedOrEmpty(characteristics, "(None)"))")
+        print("  Name: \(info.name)")
+        print("  Registry ID: \(info.registryID)")
+        print("  Location: \(info.location.rawValue)")
+        print("  Characteristics: \(joinedOrEmpty(info.characteristics.map(\.rawValue), "(None)"))")
         print("  Features:")
-        for (name, supported) in features {
-            print("    \(name): \(supported ? "Supported" : "Unsupported")")
+        for feature in features {
+            print("    \(feature.name): \(feature.supported ? "Supported" : "Unsupported")")
         }
 
-        if #available(macOS 10.15, *) {
-            if gpu.location != .builtIn {
-                print("  Max Transfer Rate: \(byteCountString(Int64(gpu.maxTransferRate)))/sec")
-            }
+        if let maxTransferRateBytesPerSecond = info.maxTransferRateBytesPerSecond {
+            print("  Max Transfer Rate: \(byteCountString(Int64(maxTransferRateBytesPerSecond)))/sec")
         }
 
-        if #available(macOS 10.12, *) {
-            print("  Recommended Maximum Memory Size: \(byteCountString(Int64(gpu.recommendedMaxWorkingSetSize)))")
+        if let recommendedMaxMemorySizeBytes = info.recommendedMaxMemorySizeBytes {
+            print("  Recommended Maximum Memory Size: \(byteCountString(Int64(recommendedMaxMemorySizeBytes)))")
         }
 
-        if #available(macOS 10.14, *) {
-            print("  Max Buffer Length: \(byteCountString(Int64(gpu.maxBufferLength)))")
+        if let maxBufferLengthInBytes = info.maxBufferLengthInBytes {
+            print("  Max Buffer Length: \(byteCountString(Int64(maxBufferLengthInBytes)))")
         }
 
-        print("  Max Threads per Thread Group: \(sizeToString(gpu.maxThreadsPerThreadgroup))")
+        print("  Max Threads per Thread Group: \(sizeToString(info.maxThreadsPerThreadGroup))")
 
-        if #available(macOS 10.13, *) {
-            print("  Max Thread Group Memory Size: \(byteCountString(Int64(gpu.maxThreadgroupMemoryLength)))")
+        if let maxThreadGroupMemorySize = info.maxThreadGroupMemorySize {
+            print("  Max Thread Group Memory Size: \(byteCountString(Int64(maxThreadGroupMemorySize)))")
         }
 
-        if #available(macOS 11.0, *) {
-            print("  Sparse Tile Size: \(byteCountString(Int64(gpu.sparseTileSizeInBytes)))")
-        }
-    }
-
-    func collectGpuCharacteristics(_ gpu: MTLDevice) -> [String] {
-        var characteristics: [String] = []
-        if gpu.isLowPower {
-            characteristics.append("Low Power")
-        }
-
-        if gpu.isHeadless {
-            characteristics.append("Headless")
-        }
-
-        if #available(macOS 10.13, *) {
-            if gpu.isRemovable {
-                characteristics.append("Removable")
-            }
-        }
-
-        if #available(macOS 10.15, *) {
-            if gpu.hasUnifiedMemory {
-                characteristics.append("Unified Memory")
-            }
-        }
-        return characteristics
-    }
-
-    func collectFeatureSupport(_ gpu: MTLDevice) -> [String: Bool] {
-        var features: [String: Bool] = [:]
-        if #available(macOS 11.0, *) {
-            features["Ray Tracing"] = gpu.supportsRaytracing
-        }
-
-        if #available(macOS 11.0, *) {
-            features["32-Bit MSAA"] = gpu.supports32BitMSAA
-        }
-
-        if #available(macOS 11.0, *) {
-            features["Dynamic Libraries"] = gpu.supportsDynamicLibraries
-        }
-
-        if #available(macOS 11.0, *) {
-            features["Function Pointers"] = gpu.supportsFunctionPointers
-        }
-
-        if #available(macOS 11.0, *) {
-            features["Query Texture LOD"] = gpu.supportsQueryTextureLOD
-        }
-
-        if #available(macOS 11.0, *) {
-            features["32-Bit Float Filtering"] = gpu.supports32BitFloatFiltering
-        }
-
-        if #available(macOS 11.0, *) {
-            features["Pull Model Interopolation"] = gpu.supportsPullModelInterpolation
-        }
-
-        if #available(macOS 11.0, *) {
-            features["BC Texture Compression"] = gpu.supportsBCTextureCompression
-        }
-
-        if #available(macOS 10.15, *) {
-            features["Shader Barycentric Coordinates"] = gpu.supportsShaderBarycentricCoordinates
-        }
-
-        if #available(macOS 10.15, *) {
-            features["Barycentric Coordinates"] = gpu.areBarycentricCoordsSupported
-        }
-
-        if #available(macOS 10.13, *) {
-            features["Raster Order Groups"] = gpu.areRasterOrderGroupsSupported
-        }
-
-        if #available(macOS 10.13, *) {
-            features["Programmable Sample Position"] = gpu.areProgrammableSamplePositionsSupported
-        }
-        return features
-    }
-
-    @available(macOS 10.15, *)
-    func locationAsString(_ location: MTLDeviceLocation) -> String {
-        switch location {
-        case .builtIn: return "Built-in"
-        case .external: return "External"
-        case .slot: return "Slot"
-        case .unspecified: return "Unspecified"
-        @unknown default:
-            fatalError("Unknown GPU Location")
+        if let sparseTileSizeInBytes = info.sparseTileSizeInBytes {
+            print("  Sparse Tile Size: \(byteCountString(Int64(sparseTileSizeInBytes)))")
         }
     }
 
@@ -194,7 +112,7 @@ struct MetalGpuTool: ParsableCommand {
         ByteCountFormatter.string(fromByteCount: value, countStyle: .binary)
     }
 
-    func sizeToString(_ value: MTLSize) -> String {
+    func sizeToString(_ value: MetalGpuInfo.Size) -> String {
         "(Width: \(value.width), Height: \(value.height), Depth: \(value.depth))"
     }
 

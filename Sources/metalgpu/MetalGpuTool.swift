@@ -77,6 +77,11 @@ struct MetalGpuTool: ParsableCommand {
             print("    \(feature.name): \(feature.supported ? "Supported" : "Unsupported")")
         }
 
+        print("  Families:")
+        for family in info.families {
+            print("    \(family)")
+        }
+
         if let maxTransferRateBytesPerSecond = info.maxTransferRateBytesPerSecond {
             print("  Max Transfer Rate: \(byteCountString(Int64(maxTransferRateBytesPerSecond)))/sec")
         }

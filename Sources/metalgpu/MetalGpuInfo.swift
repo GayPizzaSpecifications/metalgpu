@@ -5,6 +5,7 @@
 //  Created by Kenneth Endfinger on 11/15/21.
 //
 
+import Collections
 import Foundation
 import Metal
 
@@ -15,6 +16,7 @@ struct MetalGpuInfo: Codable {
     let location: Location
     let characteristics: [Characteristic]
     let features: [Feature]
+    let families: [String]
     let maxTransferRateBytesPerSecond: UInt64?
     let recommendedMaxMemorySizeBytes: UInt64?
     let maxBufferLengthInBytes: UInt64?
@@ -49,6 +51,9 @@ struct MetalGpuInfo: Codable {
         case barycentricCoordinates = "Barycentric Coordinates"
         case rasterOrderGroups = "Raster Order Groups"
         case programmableSamplePosition = "Programmable Sample Position"
+        case primitiveMotionBlur = "Primitive Motion Blur"
+        case renderDynamicLibraries = "Render Dynamic Libraries"
+        case depth24Stencil8PixelFormat = "Depth 24 Stencil 8 Pixel Format"
     }
 
     struct Feature: Codable {
@@ -130,6 +135,7 @@ extension MTLDevice {
             }.sorted {
                 $0.name.compare($1.name) == .orderedAscending
             },
+            families: collectGpuFamilies(),
             maxTransferRateBytesPerSecond: maxTransferRate,
             recommendedMaxMemorySizeBytes: recommendedMaxMemorySize,
             maxBufferLengthInBytes: maxBufferMemorySize,
@@ -141,6 +147,9 @@ extension MTLDevice {
 
     func collectGpuFeatures() -> [MetalGpuInfo.FeatureKey: Bool] {
         var features: [MetalGpuInfo.FeatureKey: Bool] = [:]
+
+        features[.depth24Stencil8PixelFormat] = isDepth24Stencil8PixelFormatSupported
+
         if #available(macOS 10.13, *) {
             features[.rasterOrderGroups] = areRasterOrderGroupsSupported
             features[.programmableSamplePosition] = areProgrammableSamplePositionsSupported
@@ -159,7 +168,9 @@ extension MTLDevice {
             features[.functionPointers] = supportsFunctionPointers
             features[.dynamicLibraries] = supportsDynamicLibraries
             features[.msaa32Bit] = supports32BitMSAA
+            features[.primitiveMotionBlur] = supportsPrimitiveMotionBlur
         }
+
         return features
     }
 
@@ -185,6 +196,37 @@ extension MTLDevice {
             }
         }
         return characteristics
+    }
+
+    func collectGpuFamilies() -> [String] {
+        if #available(macOS 10.15, *) {
+            let families: OrderedDictionary<MTLGPUFamily, String> = [
+                .apple1: "Apple1",
+                .apple2: "Apple2",
+                .apple3: "Apple3",
+                .apple4: "Apple4",
+                .apple5: "Apple5",
+                .apple6: "Apple6",
+                .apple7: "Apple7",
+                .common1: "Common1",
+                .common2: "Common2",
+                .common3: "Common3",
+                .mac1: "Mac1",
+                .mac2: "Mac2",
+                .macCatalyst1: "MacCatalyst1",
+                .macCatalyst2: "MacCatalyst2"
+            ]
+
+            var supportedFamilies: [String] = []
+            for (family, text) in families {
+                if supportsFamily(family) {
+                    supportedFamilies.append(text)
+                }
+            }
+            return supportedFamilies
+        } else {
+            return []
+        }
     }
 }
 

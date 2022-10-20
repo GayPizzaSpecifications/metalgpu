@@ -2,7 +2,7 @@
 //  main.swift
 //  metalgpu
 //
-//  Created by Kenneth Endfinger on 11/14/21.
+//  Created by Alex Zenla on 11/14/21.
 //
 
 import Foundation

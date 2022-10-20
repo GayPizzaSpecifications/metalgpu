@@ -2,7 +2,7 @@
 //  MetalGpuInfo.swift
 //  metalgpu
 //
-//  Created by Kenneth Endfinger on 11/15/21.
+//  Created by Alex Zenla on 11/15/21.
 //
 
 import Collections

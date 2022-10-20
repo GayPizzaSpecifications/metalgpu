@@ -2,7 +2,7 @@
 //  MetalGpuTool.swift
 //  metalgpu
 //
-//  Created by Kenneth Endfinger on 10/29/21.
+//  Created by Alex Zenla on 10/29/21.
 //
 
 import ArgumentParser

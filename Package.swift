@@ -10,8 +10,8 @@ let package = Package(
         .executable(name: "metalgpu", targets: ["metalgpu"])
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-argument-parser", .upToNextMajor(from: "1.0.0")),
-        .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.0.0"))
+        .package(url: "https://github.com/apple/swift-argument-parser", .upToNextMajor(from: "1.1.4")),
+        .package(url: "https://github.com/apple/swift-collections", .upToNextMajor(from: "1.0.3"))
     ],
     targets: [
         .target(

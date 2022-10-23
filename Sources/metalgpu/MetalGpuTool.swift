@@ -103,6 +103,10 @@ struct MetalGpuTool: ParsableCommand {
         if let sparseTileSizeInBytes = info.sparseTileSizeInBytes {
             print("  Sparse Tile Size: \(byteCountString(Int64(sparseTileSizeInBytes)))")
         }
+        
+        if let maxSupportedVertexAmplification = info.maxSupportedVertexAmplification {
+            print("  Max Vertex Amplification: \(maxSupportedVertexAmplification)")
+        }
     }
 
     func joinedOrEmpty(_ items: [String], _ otherwise: String) -> String {

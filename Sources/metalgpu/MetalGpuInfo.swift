@@ -23,6 +23,7 @@ struct MetalGpuInfo: Codable {
     let maxThreadGroupMemorySize: UInt64?
     let sparseTileSizeInBytes: UInt64?
     let maxThreadsPerThreadGroup: Size
+    let maxSupportedVertexAmplification: UInt64?
 
     enum Location: String, Codable {
         case builtIn = "Built-in"
@@ -40,9 +41,11 @@ struct MetalGpuInfo: Codable {
 
     enum FeatureKey: String, Codable {
         case rayTracing = "Ray Tracing"
+        case rayTracingFromRender = "Ray Tracing from Render"
         case msaa32Bit = "32-Bit MSAA"
         case dynamicLibraries = "Dynamic Libraries"
         case functionPointers = "Function Pointers"
+        case functionPointersFromRender = "Function Pointers From Render"
         case queryTextureLOD = "Query Texture LOD"
         case floatFiltering32Bit = "32-Bit Float Filtering"
         case pullModelInterpolation = "Pull Model Interpolation"
@@ -115,6 +118,16 @@ extension MTLDevice {
                 maxTransferRate = self.maxTransferRate
             }
         }
+        
+        var maxSupportedVertexAmplification: UInt64?
+        if #available(macOS 10.15, *) {
+            for queryMaxVert in 1...999 {
+                if !self.supportsVertexAmplificationCount(queryMaxVert) {
+                    maxSupportedVertexAmplification = UInt64(queryMaxVert-1)
+                    break
+                }
+            }
+        }
 
         var sparseTileSizeInBytes: UInt64?
         if #available(macOS 11.0, *) {
@@ -141,7 +154,8 @@ extension MTLDevice {
             maxBufferLengthInBytes: maxBufferMemorySize,
             maxThreadGroupMemorySize: maxThreadGroupMemorySize,
             sparseTileSizeInBytes: sparseTileSizeInBytes,
-            maxThreadsPerThreadGroup: maxThreadsPerThreadgroup.asMetalGpuSize()
+            maxThreadsPerThreadGroup: maxThreadsPerThreadgroup.asMetalGpuSize(),
+            maxSupportedVertexAmplification: maxSupportedVertexAmplification
         )
     }
 
@@ -169,6 +183,12 @@ extension MTLDevice {
             features[.dynamicLibraries] = supportsDynamicLibraries
             features[.msaa32Bit] = supports32BitMSAA
             features[.primitiveMotionBlur] = supportsPrimitiveMotionBlur
+            features[.rayTracing] = supportsRaytracing
+        }
+        
+        if #available(macOS 12.0, *) {
+            features[.functionPointersFromRender] = supportsFunctionPointersFromRender
+            features[.rayTracingFromRender] = supportsRaytracingFromRender
         }
 
         return features
@@ -200,7 +220,7 @@ extension MTLDevice {
 
     func collectGpuFamilies() -> [String] {
         if #available(macOS 10.15, *) {
-            let families: OrderedDictionary<MTLGPUFamily, String> = [
+            var families: OrderedDictionary<MTLGPUFamily, String> = [
                 .apple1: "Apple1",
                 .apple2: "Apple2",
                 .apple3: "Apple3",
@@ -208,6 +228,7 @@ extension MTLDevice {
                 .apple5: "Apple5",
                 .apple6: "Apple6",
                 .apple7: "Apple7",
+                .apple8: "Apple8",
                 .common1: "Common1",
                 .common2: "Common2",
                 .common3: "Common3",
@@ -216,6 +237,8 @@ extension MTLDevice {
                 .macCatalyst1: "MacCatalyst1",
                 .macCatalyst2: "MacCatalyst2"
             ]
+            
+            if #available(macOS 13.0, *) {families[.metal3] = "Metal3"}
 
             var supportedFamilies: [String] = []
             for (family, text) in families {

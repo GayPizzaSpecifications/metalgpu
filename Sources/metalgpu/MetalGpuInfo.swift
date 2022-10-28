@@ -238,7 +238,9 @@ extension MTLDevice {
                 .macCatalyst2: "MacCatalyst2"
             ]
             
-            if #available(macOS 13.0, *) {families[.metal3] = "Metal3"}
+            if #available(macOS 13.0, *) {
+                families[.metal3] = "Metal3"
+            }
 
             var supportedFamilies: [String] = []
             for (family, text) in families {

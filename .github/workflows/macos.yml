@@ -2,7 +2,7 @@ name: macOS
 on: [push]
 jobs:
   build:
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
@@ -16,14 +16,14 @@ jobs:
           name: metalgpu
           path: metalgpu
   format:
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
       - name: Swift Format
         run: swiftformat --lint Package.swift Sources
   lint:
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2

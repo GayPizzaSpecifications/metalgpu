@@ -118,12 +118,12 @@ extension MTLDevice {
                 maxTransferRate = self.maxTransferRate
             }
         }
-        
+
         var maxSupportedVertexAmplification: UInt64?
-        if #available(macOS 10.15, *) {
-            for queryMaxVert in 1...999 {
+        if #available(macOS 10.15.4, *) {
+            for queryMaxVert in 1 ... 999 {
                 if !self.supportsVertexAmplificationCount(queryMaxVert) {
-                    maxSupportedVertexAmplification = UInt64(queryMaxVert-1)
+                    maxSupportedVertexAmplification = UInt64(queryMaxVert - 1)
                     break
                 }
             }
@@ -185,7 +185,7 @@ extension MTLDevice {
             features[.primitiveMotionBlur] = supportsPrimitiveMotionBlur
             features[.rayTracing] = supportsRaytracing
         }
-        
+
         if #available(macOS 12.0, *) {
             features[.functionPointersFromRender] = supportsFunctionPointersFromRender
             features[.rayTracingFromRender] = supportsRaytracingFromRender
@@ -228,7 +228,6 @@ extension MTLDevice {
                 .apple5: "Apple5",
                 .apple6: "Apple6",
                 .apple7: "Apple7",
-                .apple8: "Apple8",
                 .common1: "Common1",
                 .common2: "Common2",
                 .common3: "Common3",
@@ -237,10 +236,6 @@ extension MTLDevice {
                 .macCatalyst1: "MacCatalyst1",
                 .macCatalyst2: "MacCatalyst2"
             ]
-            
-            if #available(macOS 13.0, *) {
-                families[.metal3] = "Metal3"
-            }
 
             var supportedFamilies: [String] = []
             for (family, text) in families {

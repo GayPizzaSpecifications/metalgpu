@@ -118,12 +118,12 @@ extension MTLDevice {
                 maxTransferRate = self.maxTransferRate
             }
         }
-        
+
         var maxSupportedVertexAmplification: UInt64?
         if #available(macOS 10.15, *) {
-            for queryMaxVert in 1...999 {
+            for queryMaxVert in 1 ... 999 {
                 if !self.supportsVertexAmplificationCount(queryMaxVert) {
-                    maxSupportedVertexAmplification = UInt64(queryMaxVert-1)
+                    maxSupportedVertexAmplification = UInt64(queryMaxVert - 1)
                     break
                 }
             }
@@ -185,7 +185,7 @@ extension MTLDevice {
             features[.primitiveMotionBlur] = supportsPrimitiveMotionBlur
             features[.rayTracing] = supportsRaytracing
         }
-        
+
         if #available(macOS 12.0, *) {
             features[.functionPointersFromRender] = supportsFunctionPointersFromRender
             features[.rayTracingFromRender] = supportsRaytracingFromRender
@@ -237,7 +237,7 @@ extension MTLDevice {
                 .macCatalyst1: "MacCatalyst1",
                 .macCatalyst2: "MacCatalyst2"
             ]
-            
+
             if #available(macOS 13.0, *) {
                 families[.metal3] = "Metal3"
             }
